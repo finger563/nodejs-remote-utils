@@ -12,7 +12,7 @@ define(['q'], function(Q) {
 	    return String(str).match(new RegExp('(.|[\r\n ]){1,' + len + '}', 'g'));
 	},
 	sanitizePath: function(path) {
-	    return path.replace(/ /g, '\\ ');
+	    return path.replace(/ /g, '_');
 	},
 	getDeviceType: function(host) {
 	    return host['Device ID'] + '+' + host.Architecture;
