@@ -12,7 +12,7 @@ define(['q'], function(Q) {
 	    return String(str).match(new RegExp('(.|[\r\n ]){1,' + len + '}', 'g'));
 	},
 	sanitizePath: function(path) {
-	    return path.replace(/ /g, '_');
+	    return path.replace(/ /g, '\\ ');
 	},
 	getDeviceType: function(host) {
 	    return host['Device ID'] + '+' + host.Architecture;
@@ -325,7 +325,7 @@ define(['q'], function(Q) {
 	},
 	mkdirRemote: function(dir, ip, user) {
 	    var self = this;
-	    dir = dir;
+	    dir = self.sanitizePath(dir);
 	    return self.executeOnHost(['mkdir -p ' + dir],
 				      ip,
 				      user);
@@ -357,8 +357,8 @@ define(['q'], function(Q) {
 	},
 	copyFromHost: function(from, to, ip, user) {
 	    var self = this;
-	    from = from;
-	    to = to;
+	    from = self.sanitizePath(from);
+	    to = self.sanitizePath(to);
 	    var url = require('url'),
 	    path = require('path'),
 	    fs = require('fs'),
@@ -400,7 +400,7 @@ define(['q'], function(Q) {
 	    unzip = require('unzip'),
 	    fstream = require('fstream'),
 	    child_process = require('child_process');
-	    var sanitized_dir = dir;
+	    var sanitized_dir = self.sanitizePath(dir);
 	    // extract the file name
 	    var file_name = url.parse(file_url).pathname.split('/').pop();
 	    var final_file = path.join(dir, file_name);
