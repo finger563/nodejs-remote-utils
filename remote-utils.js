@@ -367,7 +367,7 @@ define(['q'], function(Q) {
 	    child_process = require('child_process');
 	    
 	    var local = to;
-	    var remote = user.name + '@' + ip + ':' + from;
+	    var remote = user.name + '@' + ip + ':"' + from + '"';
 
 	    var scp = 'scp -o StrictHostKeyChecking=no -i ' + user.Key + ' -r ' + remote + ' ' + local;
 	    
