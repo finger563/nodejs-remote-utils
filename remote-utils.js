@@ -4,7 +4,10 @@ define(['q'], function(Q) {
     'use strict';
 
     return {
-	trackedProcesses: ['catkin_make', 'node_main', 'roscore'],
+	trackedProcesses: ['catkin_make', 'node_main', 'roscore'], // can be changed by the user
+	notify: function(level, msg) {  // can be changed by the user
+	    console.log(level + ':: ' + msg);
+	},
 	chunkString: function(str, len) {
 	    return String(str).match(new RegExp('(.|[\r\n ]){1,' + len + '}', 'g'));
 	},
