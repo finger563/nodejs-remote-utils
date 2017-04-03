@@ -32,15 +32,11 @@ define(['q'], function(Q) {
 		.then(function (res) {
 		    if (!res.alive)
 			throw new String(ip + ' is not reachable.');
-		    return true;
 		});
 	},
 	testSSH: function(ip, user) {
 	    var self = this;
 	    return self.executeOnHost(['echo "hello"'], ip, user)
-		.then(function () {
-		    return true;
-		})
 		.catch(function (err) {
 		    throw new String(user.name + '@' + ip + ' not SSH-able: ' + err);
 		});
@@ -59,7 +55,6 @@ define(['q'], function(Q) {
 			throw new String('host ' + ip + ':' + os +
 					 ' has incorrect OS: '+ output.stdout);
 		    }
-		    return true;
 		});
 	},
 	testDeviceId: function(deviceId, deviceIdCommand, ip, user) {
@@ -72,7 +67,6 @@ define(['q'], function(Q) {
 			throw new String('host ' + ip + ':' + deviceId +
 					 ' has incorrect deviceId: '+ output.stdout);
 		    }
-		    return true;
 		});
 	},
 	isFree: function(ip, user) {
@@ -87,7 +81,6 @@ define(['q'], function(Q) {
 			    throw new String(ip + ' is already running: ' + output.stdout);
 			};
 		    });
-		    return true;
 		});
 	},
 	getAvailability: function(host, checkTasks) {
@@ -100,22 +93,19 @@ define(['q'], function(Q) {
 		    //self.logger.info('pinging ' +intf.IP);
 		    return self.testPing(intf.IP)
 			.then(function() {
-			    if (host.Users) {
-				var userTasks = host.Users.map(function(user) {
-				    //self.logger.info('testing ' + user.name + ' on ' + intf.IP);
-				    return self.testSSH(intf.IP, user)
-					.then(function() {
-					    return user;
-					});
-				});
-				return Q.any(userTasks);
-			    }
-			    else {
-				throw new String('Host ' + host.name + ' has no users!');
-			    }
+			    var userTasks = host.Users.map(function(user) {
+				self.notify('info','testing ' + user.name + ' on ' + intf.IP);
+				return self.testSSH(intf.IP, user)
+				    .then(function() {
+					return user;
+				    });
+			    });
+			    return Q.any(userTasks);
 			})
 			.then(function(user) {
-			    //self.logger.info(intf.IP + ' got valid user: ' + user.name);
+			    if (!user)
+				return;
+			    self.notify('info',intf.IP + ' got valid user: ' + user.name);
 			    return self.testArchOS(host.Architecture, host.OS, intf.IP, user)
 				.then(function() {
 				    return self.testDeviceId(host['Device ID'], 
@@ -126,8 +116,6 @@ define(['q'], function(Q) {
 				.then(function() {
 				    if (checkTasks)
 					return self.isFree(intf.IP, user)
-				    else
-					return [];
 				})
 				.then(function() {
 				    return {host: host, intf:intf, user:user};
@@ -140,7 +128,6 @@ define(['q'], function(Q) {
 		});
 		return Q.all(tasks);
 	    }
-	    return [];
 	},
 	getAvailableHosts: function(hosts, checkTasks) {
 	    var self = this;
@@ -174,7 +161,7 @@ define(['q'], function(Q) {
 
 	    if ( stderrCB == undefined ) {
 		stderrCB = function(data) {
-		    return true;
+		    return;
 		};
 	    }
 
@@ -296,26 +283,16 @@ define(['q'], function(Q) {
 	    }
 	    return retVals;
 	},
-	parseMakeErrorOutput: function(output, replaceDir) {
-	    var regex = /([^:^\n]+):(\d+):(\d+):\s(\w+\s*\w*):\s(.+)\n(\s+)(.*)\s+\^+/gm;
+	parseMakeErrorOutput: function(output) {
+	    var regex = /^(.*):([0-9]+):[0-9]+: (warning|error): (.*)$/gm;
 	    var match = null;
 	    var retVals = [];
 	    while (match = regex.exec(output)) {
-		var baseName = match[1].replace(replaceDir, ''),
-		packageName = baseName.split('/')[0],
-		fileName = baseName.split('/').slice(-1)[0],
-		column = parseInt(match[3]),
-		codeWhitespace = match[6];
 		retVals.push({
-		    fileName:       fileName,
-		    packageName:    packageName,
+		    fileName:       match[1],
 		    line:           parseInt(match[2]),
-		    column:         column,
-		    type:           match[4],
-		    text:           match[5],
-		    codeWhitespace: codeWhitespace,
-		    code:           match[7],
-		    adjustedColumn: column - codeWhitespace.length
+		    type:           match[3],
+		    text:           match[4],
 		});
 	    }
 	    return retVals;
