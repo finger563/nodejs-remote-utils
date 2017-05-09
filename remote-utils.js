@@ -118,6 +118,7 @@ define(['q'], function(Q) {
 					return self.isFree(intf.IP, user)
 				})
 				.then(function() {
+				    self.notify('info','returning valid host on ' + intf.IP);
 				    return {host: host, intf:intf, user:user};
 				});
 			})
@@ -140,8 +141,11 @@ define(['q'], function(Q) {
 		.then(function(availArray) {
 		    var hostsUp = [];
 		    for (var i=0; i < availArray.length; i++) {
-			if (availArray[i][0])
-			    hostsUp.push(availArray[i][0]);
+			for (var j=0; j < availArray[i].length; j++) {
+			    if (availArray[i][j]) {
+				hostsUp.push(availArray[i][j]);
+			    }
+			}
 		    }
 		    return hostsUp;
 		});
