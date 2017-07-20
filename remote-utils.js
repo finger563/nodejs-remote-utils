@@ -5,6 +5,12 @@ define(['q'], function(Q) {
 
     return {
 	trackedProcesses: ['catkin_make', 'node_main', 'roscore'], // can be changed by the user
+	uuidv4: function() {
+	    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+		var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+		return v.toString(16);
+	    });
+	},
 	notify: function(level, msg) {  // can be changed by the user
 	    console.log(level + ':: ' + msg);
 	},
@@ -19,7 +25,7 @@ define(['q'], function(Q) {
 	},
 	range: function(lowEnd,highEnd) {
 	    var arr = [],
-	    c = highEnd - lowEnd + 1;
+		c = highEnd - lowEnd + 1;
 	    while ( c-- ) {
 		arr[c] = highEnd--
 	    }
@@ -341,11 +347,11 @@ define(['q'], function(Q) {
 	    from = self.sanitizePath(from);
 	    to = self.sanitizePath(to);
 	    var url = require('url'),
-	    path = require('path'),
-	    fs = require('fs'),
-	    unzip = require('unzip'),
-	    fstream = require('fstream'),
-	    child_process = require('child_process');
+		path = require('path'),
+		fs = require('fs'),
+		unzip = require('unzip'),
+		fstream = require('fstream'),
+		child_process = require('child_process');
 	    
 	    var local = to;
 	    var remote = user.name + '@' + ip + ':"' + from + '"';
@@ -376,18 +382,19 @@ define(['q'], function(Q) {
 	wgetAndUnzipLibrary: function(file_url, dir) {
 	    var self = this;
 	    var url = require('url'),
-	    path = require('path'),
-	    fs = require('fs'),
-	    unzip = require('unzip'),
-	    fstream = require('fstream'),
-	    child_process = require('child_process');
+		path = require('path'),
+		fs = require('fs'),
+		unzip = require('unzip'),
+		fstream = require('fstream'),
+		child_process = require('child_process');
 	    var sanitized_dir = self.sanitizePath(dir);
 	    // extract the file name
 	    var file_name = url.parse(file_url).pathname.split('/').pop();
-	    var final_file = path.join(dir, file_name);
+	    var output_file_name = self.uuidv4() + '_' + file_name;
+	    var final_file = path.join(dir, output_file_name);
 
 	    // compose the wget command; -O is output file
-	    var wget = 'wget --no-check-certificate -P ' + sanitized_dir + ' ' + file_url;
+	    var wget = 'wget -O ' + self.sanitizePath(final_file) + ' --no-check-certificate ' + file_url;
 
 	    var deferred = Q.defer();
 
