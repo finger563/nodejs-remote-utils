@@ -185,7 +185,10 @@ define(['q'], function(Q) {
 		    deferred.reject('Couldnt connect to ' + ip + ': ' + err);
 		});
 		conn.on('ready', function() {
-		    conn.exec(cmdString, function(err, stream) {
+		    var opts = {
+			pty: true
+		    };
+		    conn.exec(cmdString, opts, function(err, stream) {
 			if (err) { 
 			    var msg = 'SSH2 Exec error: ' + err;
 			    deferred.reject(msg);
