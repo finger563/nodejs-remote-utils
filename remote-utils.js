@@ -203,13 +203,17 @@ define(['q'], function(Q) {
 			    }
 			    output.stderr = remote_stderr;
 			    deferred.resolve(output);
-			}).stdout.on('data', function(data) {
+			}).on('data', function(data) {
+			    //console.log('GOT STDOUT: ' + data);
 			    remote_stdout += data;
-			    if (stdoutCB != null)
-				stdoutCB(data);
+			    if (typeof stdoutCB === 'function' && stdoutCB(data.toString('utf-8'))) {
+				conn.end();
+				deferred.reject(data);
+			    }
 			}).stderr.on('data', function(data) {
+			    //console.log('GOT STDERR: ' + data);
 			    remote_stderr += data;
-			    if (stderrCB(data)) {
+			    if (typeof stdoutCB === 'function' && stderrCB(data.toString('utf-8'))) {
 				conn.end();
 				deferred.reject(data);
 			    }
