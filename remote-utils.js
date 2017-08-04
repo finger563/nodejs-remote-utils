@@ -156,8 +156,11 @@ define(['q'], function(Q) {
 		    return hostsUp;
 		});
 	},
-	executeOnHost: function(cmds, ip, user, stderrCB, stdoutCB) {
+	executeOnHost: function(cmds, ip, user, stderrCB, stdoutCB, usePTY) {
 	    var self = this;
+	    var execOpts = {
+		pty: usePTY
+	    };
 	    var Client = require('ssh2').Client;
 	    var deferred = Q.defer();
 	    var output = {
@@ -185,10 +188,7 @@ define(['q'], function(Q) {
 		    deferred.reject('Couldnt connect to ' + ip + ': ' + err);
 		});
 		conn.on('ready', function() {
-		    var opts = {
-			pty: true
-		    };
-		    conn.exec(cmdString, opts, function(err, stream) {
+		    conn.exec(cmdString, execOpts, function(err, stream) {
 			if (err) { 
 			    var msg = 'SSH2 Exec error: ' + err;
 			    deferred.reject(msg);
