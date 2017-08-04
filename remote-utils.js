@@ -213,7 +213,7 @@ define(['q'], function(Q) {
 			}).stderr.on('data', function(data) {
 			    //console.log('GOT STDERR: ' + data);
 			    remote_stderr += data;
-			    if (typeof stdoutCB === 'function' && stderrCB(data.toString('utf-8'))) {
+			    if (typeof stderrCB === 'function' && stderrCB(data.toString('utf-8'))) {
 				conn.end();
 				deferred.reject(data);
 			    }
