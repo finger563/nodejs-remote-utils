@@ -4,7 +4,7 @@ define(['q'], function(Q) {
     'use strict';
 
     return {
-	trackedProcesses: ['catkin_make', 'node_main', 'roscore'], // can be changed by the user
+	trackedProcesses: [], // can be changed by the user
 	uuidv4: function() {
 	    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
 		var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -391,8 +391,6 @@ define(['q'], function(Q) {
 	    var url = require('url'),
 		path = require('path'),
 		fs = require('fs'),
-		unzip = require('unzip'),
-		fstream = require('fstream'),
 		child_process = require('child_process');
 	    var sanitized_dir = self.sanitizePath(dir);
 	    // extract the file name
@@ -411,21 +409,14 @@ define(['q'], function(Q) {
 		    deferred.reject("Couldn't download " + file_url + ' :: ' + stderr);
 		}
 		else {
-		    var readStream = fs.createReadStream(final_file);
-		    var writeStream = fstream.Writer(dir);
-		    if (readStream == undefined || writeStream == undefined) {
-			deferred.reject("Couldn't open " + dir + " or " + final_file);
-		    }
-		    else {
-			writeStream.on('unpipe', () => {
-			    deferred.resolve('downloaded and unzipped ' + file_name + ' into ' + dir);
-			});
-
-			readStream
-			    .pipe(unzip.Parse())
-			    .pipe(writeStream);
-			fs.unlinkSync(final_file);
-		    }
+                    var unzip = 'unzip -o -d ' + sanitized_dir + ' ' + self.sanitizePath(final_file);
+                    child_process.exec(unzip, function(err, stdout, stderr) {
+                        if (err) {
+                            deferred.reject("Couldn't unzip " + self.sanitizePath(final_file) + ' :: ' + stderr);
+                        }
+                        fs.unlinkSync(final_file);
+			deferred.resolve('downloaded and unzipped ' + file_name + ' into ' + dir);
+                    });
 		}
 	    });
 	    return deferred.promise;
