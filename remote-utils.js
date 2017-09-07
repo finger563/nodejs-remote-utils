@@ -326,27 +326,30 @@ define(['q'], function(Q) {
 	},
 	copyToHost: function(from, to, ip, user) {
 	    var self = this;
-	    var client = require('scp2');
-	    //from = self.sanitizePath(from);
-	    //to = self.sanitizePath(to);
+	    from = self.sanitizePath(from);
+	    to = self.sanitizePath(to);
+	    var url = require('url'),
+		path = require('path'),
+		fs = require('fs'),
+		unzip = require('unzip'),
+		fstream = require('fstream'),
+		child_process = require('child_process');
+	    
+	    var local = from;
+	    var remote = user.name + '@' + ip + ':"' + to + '"';
+
+	    var scp = 'scp -o StrictHostKeyChecking=no -i ' + user.Key + ' -r ' + local + ' ' + remote;
+	    
 	    var deferred = Q.defer();
-	    try { 
-		client.scp(from, {
-		    host: ip,
-		    username: user.name,
-		    privateKey: require('fs').readFileSync(user.Key),
-		    path: to
-		}, function(err) {
-		    if (err)
-			deferred.reject('copy to ' + ip + ' failed: '+ err);
-		    else {
-			deferred.resolve();
-		    }
-		});
-	    }
-	    catch (err) {
-		deferred.reject('copy to ' + ip + ' failed: '+ err);
-	    }
+
+	    var child = child_process.exec(scp, function(err, stdout, stderr) {
+		if (err) {
+		    deferred.reject('copy to ' + ip + ' failed: '+err);
+		}
+		else {
+		    deferred.resolve('copied ' + local + ' into ' + remote);
+		}
+	    });
 	    return deferred.promise;
 	},
 	copyFromHost: function(from, to, ip, user) {
