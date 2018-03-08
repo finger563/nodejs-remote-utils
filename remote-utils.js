@@ -96,6 +96,12 @@ define(['q'], function(Q) {
 	    // test IP connectivity
 	    if (host.Interface_list) {
 		var tasks = host.Interface_list.map(function(intf) {
+                    if (!intf.IP) {
+                        return new Promise(function(resolve, reject) {
+                            self.notify('warning', `Host ${host['Device ID']}+${host['Architecture']} has invalid interface ${intf.name} - ${intf.path}!`);
+                            reject(`Invalid interface ${intf.name} - ${intf.path}`);
+                        });
+                    }
 		    //self.logger.info('pinging ' +intf.IP);
 		    return self.testPing(intf.IP)
 			.then(function() {
@@ -133,8 +139,21 @@ define(['q'], function(Q) {
 			    //self.notify('error',err);
 			});
 		});
-		return Q.all(tasks);
+		return Q.all(tasks).then(function(validHostList) {
+                    if (Array.isArray(validHostList) && validHostList.length > 0) {
+                        return validHostList.filter((h) => h && h.user).slice(0,1);
+                    }
+                    else {
+                        return [];
+                    }
+                });
 	    }
+            else {
+                return new Promise(function(resolve, reject) {
+                    self.notify('warning', `Host ${host['Device ID']}+${host['Architecture']} has no interfaces!`);
+                    reject(`Invalid Host: ${host.name}`);
+                });
+            }
 	},
 	getAvailableHosts: function(hosts, checkTasks) {
 	    var self = this;
