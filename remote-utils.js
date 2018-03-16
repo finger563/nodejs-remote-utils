@@ -385,7 +385,7 @@ define(['q'], function(Q) {
 	    var local = to;
 	    var remote = user.name + '@' + ip + ':"' + from + '"';
 
-	    var scp = 'scp -o StrictHostKeyChecking=no -i ' + user.Key + ' -r ' + remote + ' ' + local;
+	    var scp = 'scp -p -o StrictHostKeyChecking=no -i ' + user.Key + ' -r ' + remote + ' ' + local;
 	    
 	    var deferred = Q.defer();
 
