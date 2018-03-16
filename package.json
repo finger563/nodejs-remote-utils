@@ -1,6 +1,6 @@
 {
   "name": "remote-utils",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "A collection of utility functions for moving files, checking and running programs between different machines.",
   "main": "remote-utils.js",
   "scripts": {
